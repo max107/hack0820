@@ -1,0 +1,4 @@
+/bin/app
+.DS_Store
+.idea
+.env.local
