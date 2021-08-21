@@ -4,7 +4,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/max107/hack0820/pkg/bot"
 	"github.com/rs/zerolog/log"
@@ -33,7 +32,7 @@ func main() {
 		return
 	}
 
-	u := bot.NewUploader(c.AwsBucket, s3.New(sess))
+	u := bot.NewUploader(c.AwsBucket, sess)
 	q := bot.NewQueue(sqs.New(sess))
 	b := bot.NewBot(c.BotToken, c.JobURL, c.StateURL, q, u)
 	if err := b.Init(); err != nil {

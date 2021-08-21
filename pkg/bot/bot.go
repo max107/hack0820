@@ -35,13 +35,12 @@ func (b *bot) handleState(msg []byte) error {
 	}
 
 	log.Info().Msgf("handleState: %v", s)
-	replyBody := &tb.Video{File: tb.FromURL(s.VideoURL)}
 	replyRecipient := &tb.Message{
 		ID:   s.MessageID,
 		Chat: &tb.Chat{ID: s.ChatID},
 	}
 
-	b.tbot.Reply(replyRecipient, replyBody)
+	b.tbot.Reply(replyRecipient, fmt.Sprintf("Видео готово: %s", s.VideoURL))
 	return nil
 }
 
