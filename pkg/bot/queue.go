@@ -9,23 +9,23 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func NewSQSQueue(s *sqs.SQS) *Queue {
-	return &Queue{s, make(chan *sqs.Message)}
+func NewQueue(s *sqs.SQS) *queue {
+	return &queue{s, make(chan *sqs.Message)}
 }
 
-type Queue struct {
+type queue struct {
 	s        *sqs.SQS
 	messages chan *sqs.Message
 }
 
-func (w *Queue) Send(uri string, msg interface{}) (err error) {
+func (q *queue) Send(uri string, msg interface{}) (err error) {
 	body, err := json.Marshal(&msg)
 	if err != nil {
 		log.Error().Err(err).Msg("json marshal failed")
 		return err
 	}
 
-	if _, err := w.s.SendMessage(&sqs.SendMessageInput{
+	if _, err := q.s.SendMessage(&sqs.SendMessageInput{
 		MessageBody:            aws.String(string(body)),
 		QueueUrl:               aws.String(uri),
 		MessageDeduplicationId: aws.String(uuid.New().String()),
@@ -37,34 +37,34 @@ func (w *Queue) Send(uri string, msg interface{}) (err error) {
 	return nil
 }
 
-func (w *Queue) receive(uri string) error {
+func (q *queue) receive(uri string) error {
 	input := &sqs.ReceiveMessageInput{QueueUrl: &uri}
 
 	for {
-		output, err := w.s.ReceiveMessage(input)
+		output, err := q.s.ReceiveMessage(input)
 		if err != nil {
 			return err
 		}
 
 		for _, message := range output.Messages {
 			log.Info().Msgf("Received message: %s", message)
-			w.messages <- message
+			q.messages <- message
 		}
 	}
 }
 
-func (w *Queue) Listen(uri string, handle func([]byte) error) error {
+func (q *queue) Listen(uri string, handle func([]byte) error) error {
 	go func() {
-		if err := w.receive(uri); err != nil {
+		if err := q.receive(uri); err != nil {
 			log.Fatal().Err(err).Msg("error while receive message from sqs")
 		}
 	}()
 
-	for message := range w.messages {
+	for message := range q.messages {
 		log.Info().Msgf("Message body: %s", *message.Body)
 		if err := handle([]byte(*message.Body)); err != nil {
 			log.Err(err).Msg("error while handle message body")
-		} else if err := w.remove(uri, message); err != nil {
+		} else if err := q.remove(uri, message); err != nil {
 			log.Err(err).Msg("error while remove message")
 		}
 	}
@@ -72,8 +72,8 @@ func (w *Queue) Listen(uri string, handle func([]byte) error) error {
 	return nil
 }
 
-func (w *Queue) remove(uri string, message *sqs.Message) error {
-	_, err := w.s.DeleteMessage(&sqs.DeleteMessageInput{
+func (q *queue) remove(uri string, message *sqs.Message) error {
+	_, err := q.s.DeleteMessage(&sqs.DeleteMessageInput{
 		QueueUrl:      aws.String(uri),
 		ReceiptHandle: message.ReceiptHandle,
 	})

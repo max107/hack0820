@@ -9,7 +9,7 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-func NewBot(token string, jobUri, stateUri string, q *Queue, u *s3Uploader) *bot {
+func NewBot(token string, jobUri, stateUri string, q *queue, u *s3Uploader) *bot {
 	return &bot{
 		token:    token,
 		q:        q,
@@ -23,7 +23,7 @@ type bot struct {
 	stateUri string
 	jobUri   string
 	token    string
-	q        *Queue
+	q        *queue
 	u        *s3Uploader
 	tbot     *tb.Bot
 }
