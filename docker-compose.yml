@@ -1,4 +1,12 @@
 version: "3.9"
 services:
   bot:
-    build: "ghcr.io/max107/hack0820:master"
+    image: "ghcr.io/max107/hack0820@sha256:922a180f1e3539f40f2b339698edb1ee84d147f0727188d36e3866c6c9590a6f"
+    environment: 
+      TELEGRAM_TOKEN: ""
+      JOB_URL: ""
+      STATE_URL: ""
+      AWS_ACCESS_KEY_ID: ""
+      AWS_SECRET_ACCESS_KEY: ""
+      AWS_REGION: ""
+      AWS_BUCKET: ""
