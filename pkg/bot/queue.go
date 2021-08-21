@@ -10,10 +10,7 @@ import (
 )
 
 func NewSQSQueue(s *sqs.SQS) *Queue {
-	return &Queue{
-		s:        s,
-		messages: make(chan *sqs.Message),
-	}
+	return &Queue{s, make(chan *sqs.Message)}
 }
 
 type Queue struct {
@@ -28,24 +25,19 @@ func (w *Queue) Send(uri string, msg interface{}) (err error) {
 		return err
 	}
 
-	if err := w.Publish(uri, body); err != nil {
+	if _, err := w.s.SendMessage(&sqs.SendMessageInput{
+		MessageBody:            aws.String(string(body)),
+		QueueUrl:               aws.String(uri),
+		MessageDeduplicationId: aws.String(uuid.New().String()),
+		MessageGroupId:         aws.String(uuid.New().String()),
+	}); err != nil {
 		log.Error().Err(err).Msg("sqs publish failed")
 		return err
 	}
 	return nil
 }
 
-func (w *Queue) Publish(uri string, msg []byte) (err error) {
-	_, err = w.s.SendMessage(&sqs.SendMessageInput{
-		MessageBody:            aws.String(string(msg)),
-		QueueUrl:               aws.String(uri),
-		MessageDeduplicationId: aws.String(uuid.New().String()),
-		MessageGroupId:         aws.String(uuid.New().String()),
-	})
-	return
-}
-
-func (w *Queue) Receive(uri string) error {
+func (w *Queue) receive(uri string) error {
 	input := &sqs.ReceiveMessageInput{QueueUrl: &uri}
 
 	for {
@@ -63,7 +55,7 @@ func (w *Queue) Receive(uri string) error {
 
 func (w *Queue) Listen(uri string, handle func([]byte) error) error {
 	go func() {
-		if err := w.Receive(uri); err != nil {
+		if err := w.receive(uri); err != nil {
 			log.Fatal().Err(err).Msg("error while receive message from sqs")
 		}
 	}()

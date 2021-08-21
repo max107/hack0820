@@ -7,7 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/rs/zerolog/log"
 )
 
 func NewS3Uploader(bucketName string, svc *s3.S3) *s3Uploader {
@@ -40,7 +39,6 @@ func (r *s3Uploader) Upload(key string, file io.Reader) error {
 		ContentDisposition: aws.String("attachment"),
 	}
 
-	resp, err := r.s3uploader.Upload(input)
-	log.Info().Msgf("resp: %v %v", resp, err)
+	_, err := r.s3uploader.Upload(input)
 	return err
 }

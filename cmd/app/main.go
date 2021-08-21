@@ -14,7 +14,6 @@ var c = new(cfg)
 
 func init() {
 	LoadConfig(c)
-	log.Debug().Msgf("%v", c)
 }
 
 func createSess(c *cfg) (*session.Session, error) {
