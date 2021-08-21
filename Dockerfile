@@ -1,4 +1,4 @@
-FROM golang:1.16.0-alpine3.13 AS base
+FROM golang:1.17.0-alpine3.14 AS base
 WORKDIR $GOPATH/src/github.com/max107/hack0820
 ENV USER=appuser
 ENV UID=10001
