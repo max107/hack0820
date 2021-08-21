@@ -40,7 +40,9 @@ func (b *bot) handleState(msg []byte) error {
 		Chat: &tb.Chat{ID: s.ChatID},
 	}
 
-	b.tbot.Reply(replyRecipient, fmt.Sprintf("Видео готово: %s", s.VideoURL))
+	if _, err := b.tbot.Reply(replyRecipient, fmt.Sprintf("Видео готово: %s", s.VideoURL)); err != nil {
+		log.Error().Err(err).Msgf("failed to send reply %s", s.VideoURL)
+	}
 	return nil
 }
 
