@@ -68,6 +68,7 @@ func (b *bot) Init() error {
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
 	if err != nil {
+		log.Error().Err(err).Msg("failed to initialize telegram bot")
 		return err
 	}
 	b.tbot = tbot
